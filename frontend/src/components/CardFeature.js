@@ -1,53 +1,55 @@
 import React from "react";
 import { useDispatch } from "react-redux";
 import { Link } from "react-router-dom";
-import { addCartItem,increaseQty } from "../redux/productSlide";
+import { addCartItem } from "../redux/productSlide";
 
 const CardFeature = ({ image, name, price, category, loading, id }) => {
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
 
   const handleAddCartProduct = (e) => {
+    e.stopPropagation(); // Prevent link click when button is clicked
     dispatch(addCartItem({
-      _id : id,
-      name : name,
-      price : price,
-      category : category,
-      image : image
-    }))
+      _id: id,
+      name,
+      price,
+      category,
+      image,
+    }));
   };
 
   return (
-    <div className="w-full min-w-[200px] max-w-[200px] bg-white hover:shadow-lg drop-shadow-lg py-5 px-4 cursor-pointer flex flex-col ">
+    <div className="w-full max-w-sm bg-white shadow-md rounded-lg overflow-hidden transition-transform transform hover:scale-105">
       {image ? (
-        <>
-          <Link
-            to={`/menu/${id}`}
-            onClick={() => window.scrollTo({ top: "0", behavior: "smooth" })}
-          >
-            <div className="h-28 flex flex-col justify-center items-center">
-              <img src={image} className="h-full" />
-            </div>
-            <h3 className="font-semibold text-slate-600  capitalize text-lg mt-4 whitespace-nowrap overflow-hidden">
-              {name}
-            </h3>
-            <p className=" text-slate-500  font-medium">{category}</p>
-            <p className=" font-bold">
+        <Link
+          to={`/menu/${id}`}
+          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+          className="block p-4"
+        >
+          <div className="h-48 flex justify-center items-center">
+            <img src={image} alt={name} className="w-full h-full object-cover rounded-md" />
+          </div>
+          <div className="mt-4 text-center">
+            <h3 className="text-xl font-semibold text-gray-800 capitalize">{name}</h3>
+            <p className="text-gray-600 font-medium">{category}</p>
+            <p className="text-lg font-bold mt-2">
               <span className="text-red-500">₹</span>
               <span>{price}</span>
             </p>
-          </Link>
-          <button
-            className="bg-orange-500 py-1 mt-2 rounded hover:bg-orange-600 w-full"
-            onClick={handleAddCartProduct}
-          >
-            Add Cart
-          </button>
-        </>
+          </div>
+        </Link>
       ) : (
-        <div className="min-h-[150px] flex justify-center items-center">
-          <p>{loading}</p>
+        <div className="h-48 flex justify-center items-center bg-gray-200">
+          <p className="text-gray-500">{loading}</p>
         </div>
       )}
+      <div className="p-4">
+        <button
+          className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-md transition-colors duration-300"
+          onClick={handleAddCartProduct}
+        >
+          Add to Cart
+        </button>
+      </div>
     </div>
   );
 };

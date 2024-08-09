@@ -15,159 +15,179 @@ function Signup() {
     email: "",
     password: "",
     confirmPassword: "",
-    image : ""
+    image: "",
   });
 
   const handleShowPassword = () => {
-    setShowPassword((preve) => !preve);
+    setShowPassword((prev) => !prev);
   };
+
   const handleShowConfirmPassword = () => {
-    setShowConfirmPassword((preve) => !preve);
+    setShowConfirmPassword((prev) => !prev);
   };
 
   const handleOnChange = (e) => {
     const { name, value } = e.target;
-    setData((preve) => {
-      return {
-        ...preve,
-        [name]: value,
-      };
-    });
+    setData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
-  const handleUploadProfileImage = async(e)=>{
-      const data = await ImagetoBase64(e.target.files[0])
-  
+  const handleUploadProfileImage = async (e) => {
+    const data = await ImagetoBase64(e.target.files[0]);
+    setData((prev) => ({
+      ...prev,
+      image: data,
+    }));
+  };
 
-      setData((preve)=>{
-          return{
-            ...preve,
-            image : data
-          }
-      })
-
-  }
-//console.log(process.env.REACT_APP_SERVER_DOMIN)
-  const handleSubmit = async(e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const { firstName, email, password, confirmPassword } = data;
     if (firstName && email && password && confirmPassword) {
       if (password === confirmPassword) {
-    
-          const fetchData = await fetch(`${process.env.REACT_APP_SERVER_DOMIN}/signup`,{
-            method : "POST",
-            headers : {
-              "content-type" : "application/json"
+        try {
+          const response = await fetch("http://localhost:5000/signup", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
             },
-            body : JSON.stringify(data)
-          })
-
-          const dataRes = await fetchData.json()
-    
-
-        // alert(dataRes.message);
-        toast(dataRes.message)
-        if(dataRes.alert){
-          navigate("/login");
+            body: JSON.stringify(data),
+          });
+          const dataRes = await response.json();
+          toast(dataRes.message);
+          if (dataRes.alert) {
+            navigate("/login");
+          }
+        } catch (error) {
+          toast.error("An error occurred. Please try again.");
         }
-       
       } else {
-        alert("password and confirm password not equal");
+        toast.error("Passwords do not match.");
       }
     } else {
-      alert("Please Enter required fields");
+      toast.error("Please fill in all required fields.");
     }
   };
 
   return (
-    <div className="p-3 md:p-4">
-      <div className="w-full max-w-sm bg-white m-auto flex  flex-col p-4">
-        {/* <h1 className='text-center text-2xl font-bold'>Sign up</h1> */}
-        <div className="w-20 h-20 overflow-hidden rounded-full drop-shadow-md shadow-md m-auto relative ">
-          <img src={data.image ? data.image :  loginSignupImage} className="w-full h-full" />
-
-          <label htmlFor="profileImage">
-            <div className="absolute bottom-0 h-1/3  bg-slate-500 bg-opacity-50 w-full text-center cursor-pointer">
-              <p className="text-sm p-1 text-white">Upload</p>
-            </div>
-            <input type={"file"} id="profileImage" accept="image/*" className="hidden" onChange={handleUploadProfileImage}/>
-          </label>
+    <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4">
+      <div className="w-full max-w-md bg-white p-8 rounded-lg shadow-lg">
+        <div className="flex justify-center mb-6 relative">
+          <div className="w-24 h-24 overflow-hidden rounded-full border-2 border-gray-300 flex items-center justify-center">
+            <img
+              src={data.image || loginSignupImage}
+              alt="Profile"
+              className="w-full h-full object-cover"
+            />
+            <label htmlFor="profileImage" className="absolute bottom-0 right-0 p-2 bg-gray-700 bg-opacity-50 text-white text-xs rounded-full cursor-pointer">
+              Upload
+              <input
+                type="file"
+                id="profileImage"
+                accept="image/*"
+                className="hidden"
+                onChange={handleUploadProfileImage}
+              />
+            </label>
+          </div>
         </div>
 
-        <form className="w-full py-3 flex flex-col" onSubmit={handleSubmit}>
-          <label htmlFor="firstName">First Name</label>
-          <input
-            type={"text"}
-            id="firstName"
-            name="firstName"
-            className="mt-1 mb-2 w-full bg-slate-200 px-2 py-1 rounded focus-within:outline-blue-300"
-            value={data.firstName}
-            onChange={handleOnChange}
-          />
+        <h1 className="text-2xl font-bold text-center mb-6">Sign Up</h1>
 
-          <label htmlFor="lastName">Last Name</label>
-          <input
-            type={"text"}
-            id="lastName"
-            name="lastName"
-            className="mt-1 mb-2 w-full bg-slate-200 px-2 py-1 rounded focus-within:outline-blue-300"
-            value={data.lastName}
-            onChange={handleOnChange}
-          />
-
-          <label htmlFor="email">Email</label>
-          <input
-            type={"email"}
-            id="email"
-            name="email"
-            className="mt-1 mb-2 w-full bg-slate-200 px-2 py-1 rounded focus-within:outline-blue-300"
-            value={data.email}
-            onChange={handleOnChange}
-          />
-
-          <label htmlFor="password">Password</label>
-          <div className="flex px-2 py-1 bg-slate-200 rounded mt-1 mb-2 focus-within:outline focus-within:outline-blue-300">
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">First Name</label>
             <input
-              type={showPassword ? "text" : "password"}
-              id="password"
-              name="password"
-              className=" w-full bg-slate-200 border-none outline-none "
-              value={data.password}
+              type="text"
+              id="firstName"
+              name="firstName"
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              value={data.firstName}
               onChange={handleOnChange}
+              required
             />
-            <span
-              className="flex text-xl cursor-pointer"
-              onClick={handleShowPassword}
-            >
-              {showPassword ? <BiShow /> : <BiHide />}
-            </span>
           </div>
 
-          <label htmlFor="confirmpassword">Confirm Password</label>
-          <div className="flex px-2 py-1 bg-slate-200 rounded mt-1 mb-2  focus-within:outline focus-within:outline-blue-300">
+          <div>
+            <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">Last Name</label>
             <input
-              type={showConfirmPassword ? "text" : "password"}
-              id="confirmpassword"
-              name="confirmPassword"
-              className=" w-full bg-slate-200 border-none outline-none "
-              value={data.confirmPassword}
+              type="text"
+              id="lastName"
+              name="lastName"
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              value={data.lastName}
               onChange={handleOnChange}
             />
-            <span
-              className="flex text-xl cursor-pointer"
-              onClick={handleShowConfirmPassword}
-            >
-              {showConfirmPassword ? <BiShow /> : <BiHide />}
-            </span>
           </div>
 
-          <button className="w-full max-w-[150px] m-auto  bg-red-500 hover:bg-red-600 cursor-pointer  text-white text-xl font-medium text-center py-1 rounded-full mt-4">
-            Sign up
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              value={data.email}
+              onChange={handleOnChange}
+              required
+            />
+          </div>
+
+          <div>
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                id="password"
+                name="password"
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                value={data.password}
+                onChange={handleOnChange}
+                required
+              />
+              <span
+                className="absolute inset-y-0 right-0 flex items-center px-2 cursor-pointer"
+                onClick={handleShowPassword}
+              >
+                {showPassword ? <BiShow /> : <BiHide />}
+              </span>
+            </div>
+          </div>
+
+          <div>
+            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">Confirm Password</label>
+            <div className="relative">
+              <input
+                type={showConfirmPassword ? "text" : "password"}
+                id="confirmPassword"
+                name="confirmPassword"
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                value={data.confirmPassword}
+                onChange={handleOnChange}
+                required
+              />
+              <span
+                className="absolute inset-y-0 right-0 flex items-center px-2 cursor-pointer"
+                onClick={handleShowConfirmPassword}
+              >
+                {showConfirmPassword ? <BiShow /> : <BiHide />}
+              </span>
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            className="w-full bg-red-500 hover:bg-red-600 text-white font-medium py-2 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+          >
+            Sign Up
           </button>
         </form>
-        <p className="text-left text-sm mt-2">
-          Already have account ?{" "}
-          <Link to={"/login"} className="text-red-500 underline">
+
+        <p className="text-center text-sm mt-4">
+          Already have an account?{" "}
+          <Link to="/login" className="text-red-500 font-medium hover:underline">
             Login
           </Link>
         </p>

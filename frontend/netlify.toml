@@ -1,0 +1,19 @@
+[build]
+  publish = "build"  # or the directory where your built app lives
+  command = "npm run build"  # or the build command you're using
+
+[[redirects]]
+  from = "/old-path/*"
+  to = "/new-path/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/login"
+  to = "/login.html"
+  status = 301

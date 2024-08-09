@@ -1,98 +1,57 @@
-import React, { useRef} from "react";
+import React, { useRef } from "react";
 import { useSelector } from "react-redux";
- import CardFeature from "../components/CardFeature";
- import HomeCard from "../components/HomeCard";
+import CardFeature from "../components/CardFeature";
+import HomeCard from "../components/HomeCard";
 import { GrPrevious, GrNext } from "react-icons/gr";
- import AllProduct from "../components/AllProduct";
-
-
+import AllProduct from "../components/AllProduct";
 
 const Home = () => {
-   const productData = useSelector((state) => state.product.productList);
-   const homeProductCartList = productData.slice(1, 5);
-   const homeProductCartListVegetables = productData.filter(
-    (el) => el.category === "vegetable",
-    []
+  const productData = useSelector((state) => state.product.productList);
+  console.log("product data:", productData);
+
+  const homeProductCartListVegetables = productData.filter(
+    (el) => el.category === "vegetable"
   );
+
   const loadingArray = new Array(4).fill(null);
   const loadingArrayFeature = new Array(10).fill(null);
+  console.log("Filtered Vegetables:", homeProductCartListVegetables);
 
   const slideProductRef = useRef();
   const nextProduct = () => {
     slideProductRef.current.scrollLeft += 200;
   };
-  const preveProduct = () => {
+  const prevProduct = () => {
     slideProductRef.current.scrollLeft -= 200;
- };
+  };
 
-
-return (      
-
-
+  return (
     <div className="p-2 md:p-4">
-   
       <div className="md:flex gap-4 py-2">
-
-        <div className="md:w-1/2">
-          <div className="flex gap-3 bg-slate-300 w-36 px-2 items-center rounded-full">
-            <p className="text-sm font-medium text-slate-900">Bike Delivery</p>
-            <img
-              src="https://cdn-icons-png.flaticon.com/512/2972/2972185.png"
-              className="h-7"
-            />
-          </div>
-          <h2 className="text-4xl md:text-7xl font-bold py-3">
-            The Fasted Delivery in{" "}
-            <span className="text-orange-600 text-">Your Home</span>
+        <div className="flex justify-center flex-col items-center w-full">
+          <h2 className="text-4xl md:text-6xl font-bold py-3 pb-14">
+            The Fastest Grocery Delivery to{" "}
+            <span className="text-red-600">Your Doorstep</span>
           </h2>
-          <p className="py-3 text-base ">
-          Food is more than just sustenance; it is a language that speaks to our senses and brings people together. 
-          Whether you're a food enthusiast, a passionate chef, or simply someone who appreciates the art of cuisine, 
-          sharing your culinary adventures on Instagram has become a delightful ritual. However, 
-          finding the perfect words to accompany your mouthwatering food photos can sometimes be a challenging task. 
-          Fear not, for we have curated a collection of delectable food quotes and captions that will elevate your 
-          Instagram game to new heights.
-          </p>
-          <button className="font-bold bg-orange-500 text-slate-200 px-4 py-2 rounded-md">
+          <button className="font-bold bg-red-500 text-slate-200 px-4 py-2 rounded-md">
             Order Now
           </button>
         </div>
-
-        <div className="md:w-1/2 flex flex-wrap gap-5 p-4 justify-center">
-          {homeProductCartList[0]
-            ? homeProductCartList.map((el) => {
-                return (
-                  <HomeCard
-                    key={el._id}
-                    id={el._id}
-                    image={el.image}
-                    name={el.name}
-                    price={el.price}
-                    category={el.category}
-                  />
-                );
-              })
-            : loadingArray.map((el, index) => {
-                return <HomeCard key={index+"loading"} loading={"Loading..."} />;
-              })} 
-        </div>
       </div>
 
-      <div className="">
+      <div>
         <div className="flex w-full items-center">
-          <h2 className="font-bold text-2xl text-slate-800 mb-4">
-            Fresh Vegetables
-          </h2>
+          <h2 className="font-bold text-2xl text-slate-800 mb-4">Groceries</h2>
           <div className="ml-auto flex gap-4">
             <button
-              onClick={preveProduct}
-              className="bg-slate-300 hover:bg-slate-400 text-lg  p-1 rounded"
+              onClick={prevProduct}
+              className="bg-slate-300 hover:bg-slate-400 text-lg p-1 rounded"
             >
               <GrPrevious />
             </button>
             <button
               onClick={nextProduct}
-              className="bg-slate-300 hover:bg-slate-400 text-lg p-1 rounded "
+              className="bg-slate-300 hover:bg-slate-400 text-lg p-1 rounded"
             >
               <GrNext />
             </button>
@@ -104,9 +63,10 @@ return (
         >
           {homeProductCartListVegetables[0]
             ? homeProductCartListVegetables.map((el) => {
+                console.log("Rendering CardFeature for:", el);
                 return (
                   <CardFeature
-                    key={el._id+"vegetable"}
+                    key={el._id + "vegetable"}
                     id={el._id}
                     name={el.name}
                     category={el.category}
@@ -115,15 +75,14 @@ return (
                   />
                 );
               })
-            : loadingArrayFeature.map((el,index) => (
-                <CardFeature loading="Loading..." key={index+"cartLoading"} />
+            : loadingArrayFeature.map((el, index) => (
+                <CardFeature loading="Loading..." key={index + "cartLoading"} />
               ))}
         </div>
       </div>
-      
-      <AllProduct heading={"Your Product"}/>
-    </div>
 
+      <AllProduct heading={"Categories"} />
+    </div>
   );
 };
 

@@ -2,11 +2,16 @@ const express = require("express");
 //152.58.17.147/32
 const cors = require("cors");
 const mongoose = require("mongoose");
- const dotenv = require("dotenv").config();
- const Stripe = require('stripe')
+const dotenv = require("dotenv").config();
+const Stripe = require('stripe')
+const jwt = require("jsonwebtoken");
+const SECRET_KEY = process.env.JWT_SECRET || "bdnf89wayr";
 
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: process.env.FRONTEND_URL,
+  credentials: true
+}));
 app.use(express.json({ limit: "10mb" }));
 
 const PORT = process.env.PORT || 5000;
@@ -39,62 +44,133 @@ app.get("/", (req, res) => {
   res.send("Server is running");
 });
 
-//sign up
-app.post('/signup',async  (req, res) => {
-  //console.log(req.body);
-  const { email } = req.body;
+const bcrypt = require('bcrypt');
 
-  userModel
-    .findOne({ email: email })
-    .then((result) => {
-      if (result) {
-        res.send({ message: 'Email id is already registered', alert: false });
-      } else {
-        const data = new userModel(req.body);
-        return data.save();
-      }
-    })
-    .then(() => {
-      res.send({ message: 'Successfully signed up', alert: true });
-    })
-    .catch((err) => {
-      //console.log(err);
-      res.send({ message: 'Error occurred', alert: false });
+// Sign up
+app.post('/signup', async (req, res) => {
+  const { email, password, confirmPassword } = req.body;
+
+  if (password !== confirmPassword) {
+    return res.status(400).json({ message: 'Passwords do not match', alert: false });
+  }
+
+  try {
+    const existingUser = await userModel.findOne({ email: email });
+
+    if (existingUser) {
+      return res.status(400).json({ message: 'Email id is already registered', alert: false });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const data = new userModel({
+      ...req.body,
+      password: hashedPassword, // Save hashed password
     });
+
+    await data.save();
+
+    return res.status(201).json({ message: 'Successfully signed up', alert: true });
+
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: 'Error occurred', alert: false });
+  }
 });
+
+// server.js or wherever your server code is
+app.get('/api/check-auth', (req, res) => {
+  if (req.cookies.authToken) {
+    res.status(200).json({ authenticated: true });
+  } else {
+    res.status(401).json({ authenticated: false });
+  }
+});
+
 
 
 
 //api login
-app.post("/login", async(req, res) => {
- //console.log(req.body);
-  const { email } = req.body;
-  
-    await userModel
-  .findOne({ email: email })
-  . then(( result) => {
-    if (result) {
-      const dataSend = {
-        _id: result._id,
-        firstName: result.firstName,
-        lastName: result.lastName,
-        email: result.email,
-        image: result.image,
-      };
-      //console.log(dataSend);
-      res.send({
-        message: "Login is successfully",
-        alert: true,
-        data: dataSend,
-      });
+// Login
+
+app.post("/login", async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const user = await userModel.findOne({ email });
+
+    if (user) {
+      const isMatch = await bcrypt.compare(password, user.password);
+
+      if (isMatch) {
+        // Generate a JWT token
+        const token = jwt.sign(
+          {
+            userId: user._id,
+            email: user.email,
+          },
+          SECRET_KEY,
+          { expiresIn: "1d" } // Token valid for 1 day
+        );
+
+        // Set the token as a cookie
+        res.cookie("authToken", token, {
+          httpOnly: true, // The cookie is not accessible via JavaScript
+          secure: process.env.NODE_ENV === "production", // Set to true in production to ensure the cookie is only sent over HTTPS
+          sameSite: "strict", // Prevent CSRF attacks
+          maxAge: 24 * 60 * 60 * 1000, // 1 day in milliseconds
+        });
+
+        res.send({
+          message: "Login successful",
+          alert: true,
+          data: {
+            _id: user._id,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            email: user.email,
+          },
+        });
+      } else {
+        res.status(401).send({
+          message: "Invalid credentials",
+          alert: false,
+        });
+      }
     } else {
-      res.send({
-        message: "Email is not available, please sign up",
+      res.status(404).send({
+        message: "Email not registered",
         alert: false,
       });
     }
-  });
+  } catch (err) {
+    res.status(500).send({ message: "Server error", alert: false });
+  }
 });
+
+// Example middleware to verify JWT from cookie
+const verifyToken = (req, res, next) => {
+  const token = req.cookies.authToken;
+
+  if (!token) {
+    return res.status(401).send({ message: "Unauthorized" });
+  }
+
+  jwt.verify(token, SECRET_KEY, (err, decoded) => {
+    if (err) {
+      return res.status(403).send({ message: "Forbidden" });
+    }
+    req.user = decoded; // store user information for use in the route
+    next();
+  });
+};
+
+// Protect routes
+app.get("/protected", verifyToken, (req, res) => {
+  res.send({ message: "You have access to this protected route!" });
+});
+
+
 
  //product section
 

@@ -1,57 +1,74 @@
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
-import AllProduct from "../components/AllProduct";
+import ProductGallery from "../components/AllProduct";
 import { addCartItem } from "../redux/productSlide";
 
-const Menu = () => {
-  const { filterby } = useParams();
-  const navigate = useNavigate()
-  const dispatch = useDispatch()
-  const productData = useSelector((state) => state.product.productList);
+const ProductDetail = () => {
+  const { productId } = useParams();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const productList = useSelector((state) => state.product.productList);
 
-  const productDisplay = productData.filter((el) => el._id === filterby)[0];
+  const selectedProduct = productList.find((item) => item._id === productId);
 
-  const handleAddCartProduct = (e) => {
-    dispatch(addCartItem(productDisplay))
+  const handleAddToCart = () => {
+    dispatch(addCartItem(selectedProduct));
   };
 
-  const handleBuy = ()=>{
-    dispatch(addCartItem(productDisplay))
-      navigate("/cart")
-  }
+  const handlePurchase = () => {
+    dispatch(addCartItem(selectedProduct));
+    navigate("/checkout");
+  };
+
   return (
-    <div className="p-2 md:p-4">
-      <div className="w-full max-w-4xl m-auto md:flex bg-white">
-        <div className="max-w-sm  overflow-hidden w-full p-5">
+    <section className="container mx-auto py-8 px-4 md:px-8">
+      <div className="flex flex-col md:flex-row bg-white shadow-lg rounded-lg overflow-hidden">
+        <div className="flex-1">
           <img
-            src={productDisplay?.image}
-            className="hover:scale-105 transition-all h-full"
+            src={selectedProduct?.image}
+            alt={selectedProduct?.name}
+            className="w-full h-full object-cover transition-transform transform hover:scale-105"
           />
         </div>
-        <div className="flex flex-col gap-1">
-          <h3 className="font-semibold text-slate-600  capitalize text-2xl md:text-4xl">
-            {productDisplay?.name}
-          </h3>
-          <p className=" text-slate-500  font-medium text-2xl">{productDisplay?.category}</p>
-          <p className=" font-bold md:text-2xl">
-            <span className="text-red-500 ">₹</span>
-            <span>{productDisplay?.price}</span>
-          </p>
-          <div className="flex gap-3">
-          <button onClick={handleBuy} className="bg-orange-500 py-1 mt-2 rounded hover:bg-orange-600 min-w-[100px]">Buy</button>
-          <button onClick={handleAddCartProduct} className="bg-orange-500 py-1 mt-2 rounded hover:bg-orange-600 min-w-[100px]">Add Cart</button>
+        <div className="flex-1 flex flex-col p-6">
+          <div className="mb-4">
+            <h2 className="text-2xl md:text-3xl font-semibold text-gray-800 capitalize">
+              {selectedProduct?.name}
+            </h2>
+            <h3 className="text-lg text-gray-600 mt-1">
+              {selectedProduct?.category}
+            </h3>
+            <div className="text-3xl font-bold text-red-600 mt-4">
+              ₹{selectedProduct?.price}
+            </div>
+          </div>
+          <div className="flex flex-col space-y-4 mb-6">
+            <button
+              onClick={handlePurchase}
+              className="w-full bg-green-600 text-white py-3 rounded-lg shadow-lg hover:bg-green-700 transition-colors"
+            >
+              Purchase Now
+            </button>
+            <button
+              onClick={handleAddToCart}
+              className="w-full bg-blue-600 text-white py-3 rounded-lg shadow-lg hover:bg-blue-700 transition-colors"
+            >
+              Add to Cart
+            </button>
           </div>
           <div>
-            <p className="text-slate-600 font-medium">Description : </p>
-            <p>{productDisplay?.description}</p>
+            <h4 className="text-lg font-semibold text-gray-700">Product Description:</h4>
+            <p className="text-gray-600 mt-2">{selectedProduct?.description}</p>
           </div>
         </div>
       </div>
 
-      <AllProduct heading={"Related Product"}/>
-    </div>
+      <div className="mt-8">
+        <ProductGallery heading={"You Might Also Like"} />
+      </div>
+    </section>
   );
 };
 
-export default Menu;
+export default ProductDetail;
