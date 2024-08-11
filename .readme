@@ -1,5 +1,3 @@
-Here's a sample README file for your Food Delivery MERN app, which we'll call "ShopKart".
-
 ShopKart
 A Food Delivery Web Application built using the MERN Stack (MongoDB, Express, React, Node.js)
 ShopKart is a web-based food delivery application . The application is built using the MERN stack, with a MongoDB database, Express.js server, React.js frontend, and Node.js runtime environment.
